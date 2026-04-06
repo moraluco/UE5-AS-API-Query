@@ -1,0 +1,23 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "0.1.0",
+	"FriendlyName": "AS API Query",
+	"Description": "Local HTTP service for querying AngelScript registered types (editor). Independent from SoftUEBridge.",
+	"Category": "Scripting",
+	"CanContainContent": false,
+	"IsBetaVersion": true,
+	"Modules": [
+		{
+			"Name": "ASApiQueryEditor",
+			"Type": "Editor",
+			"LoadingPhase": "PostEngineInit"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "Angelscript",
+			"Enabled": true
+		}
+	]
+}
