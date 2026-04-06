@@ -128,6 +128,147 @@ namespace
 			return;
 		}
 
+		if (Action == TEXT("list_symbols"))
+		{
+			FString Filter;
+			Root->TryGetStringField(TEXT("filter"), Filter);
+
+			if (!FAngelscriptManager::IsInitialized())
+			{
+				TSharedPtr<FJsonObject> Err = MakeShareable(new FJsonObject);
+				Err->SetNumberField(TEXT("schemaVersion"), 1);
+				Err->SetBoolField(TEXT("ok"), false);
+				TSharedPtr<FJsonObject> E = MakeShareable(new FJsonObject);
+				E->SetStringField(TEXT("code"), TEXT("not_initialized"));
+				E->SetStringField(TEXT("message"), TEXT("Angelscript manager is not initialized"));
+				Err->SetObjectField(TEXT("error"), E);
+				SendJson(OnComplete, Err, EHttpServerResponseCodes::Ok);
+				return;
+			}
+
+			asIScriptEngine* Eng = FAngelscriptManager::Get().GetScriptEngine();
+			if (!Eng)
+			{
+				TSharedPtr<FJsonObject> Err = MakeShareable(new FJsonObject);
+				Err->SetNumberField(TEXT("schemaVersion"), 1);
+				Err->SetBoolField(TEXT("ok"), false);
+				TSharedPtr<FJsonObject> E = MakeShareable(new FJsonObject);
+				E->SetStringField(TEXT("code"), TEXT("internal"));
+				E->SetStringField(TEXT("message"), TEXT("Script engine is null"));
+				Err->SetObjectField(TEXT("error"), E);
+				SendJson(OnComplete, Err, EHttpServerResponseCodes::Ok);
+				return;
+			}
+
+			TSet<FString> Seen;
+			TArray<FString> Names;
+
+			auto Consider = [&](const FString& Display)
+			{
+				if (!Filter.IsEmpty() && !Display.Contains(Filter, ESearchCase::IgnoreCase))
+				{
+					return;
+				}
+				if (Seen.Contains(Display))
+				{
+					return;
+				}
+				Seen.Add(Display);
+				Names.Add(Display);
+			};
+
+			const asUINT GFCount = Eng->GetGlobalFunctionCount();
+			for (asUINT i = 0; i < GFCount; ++i)
+			{
+				asIScriptFunction* Func = Eng->GetGlobalFunctionByIndex(i);
+				if (!Func)
+				{
+					continue;
+				}
+				const char* NS = Func->GetNamespace();
+				const char* N = Func->GetName();
+				if (!N)
+				{
+					continue;
+				}
+				FString Display;
+				if (NS && NS[0] != '\0')
+				{
+					Display = FString(ANSI_TO_TCHAR(NS)) + TEXT("::") + FString(ANSI_TO_TCHAR(N)) + TEXT("()");
+				}
+				else
+				{
+					Display = FString(ANSI_TO_TCHAR(N)) + TEXT("()");
+				}
+				Consider(Display);
+			}
+
+			const asUINT TypeCount = Eng->GetObjectTypeCount();
+			for (asUINT ti = 0; ti < TypeCount; ++ti)
+			{
+				asITypeInfo* Ty = Eng->GetObjectTypeByIndex(ti);
+				if (!Ty)
+				{
+					continue;
+				}
+				const char* TN = Ty->GetName();
+				if (!TN)
+				{
+					continue;
+				}
+				const FString TypeName(ANSI_TO_TCHAR(TN));
+
+				const asUINT MethodCount = Ty->GetMethodCount();
+				for (asUINT mi = 0; mi < MethodCount; ++mi)
+				{
+					asIScriptFunction* M = Ty->GetMethodByIndex(mi);
+					if (!M)
+					{
+						continue;
+					}
+					const char* Mn = M->GetName();
+					if (!Mn)
+					{
+						continue;
+					}
+					Consider(TypeName + TEXT(".") + FString(ANSI_TO_TCHAR(Mn)) + TEXT("()"));
+				}
+
+				const asUINT PropCount = Ty->GetPropertyCount();
+				for (asUINT pi = 0; pi < PropCount; ++pi)
+				{
+					const char* Pn = nullptr;
+					if (Ty->GetProperty(pi, &Pn) < 0 || !Pn)
+					{
+						continue;
+					}
+					Consider(TypeName + TEXT(".") + FString(ANSI_TO_TCHAR(Pn)));
+				}
+			}
+
+			Names.Sort();
+
+			TArray<TSharedPtr<FJsonValue>> SymbolsArr;
+			for (const FString& Display : Names)
+			{
+				TSharedPtr<FJsonObject> O = MakeShareable(new FJsonObject);
+				O->SetStringField(TEXT("name"), Display);
+				SymbolsArr.Add(MakeShareable(new FJsonValueObject(O)));
+			}
+
+			TSharedPtr<FJsonObject> Data = MakeShareable(new FJsonObject);
+			Data->SetStringField(TEXT("action"), TEXT("list_symbols"));
+			Data->SetArrayField(TEXT("symbols"), SymbolsArr);
+			Data->SetNumberField(TEXT("total"), SymbolsArr.Num());
+
+			TSharedPtr<FJsonObject> Ok = MakeShareable(new FJsonObject);
+			Ok->SetNumberField(TEXT("schemaVersion"), 1);
+			Ok->SetBoolField(TEXT("ok"), true);
+			Ok->SetObjectField(TEXT("data"), Data);
+			SendJson(OnComplete, Ok, EHttpServerResponseCodes::Ok);
+			return;
+		}
+
 		TSharedPtr<FJsonObject> Err = MakeShareable(new FJsonObject);
 		Err->SetNumberField(TEXT("schemaVersion"), 1);
 		Err->SetBoolField(TEXT("ok"), false);
