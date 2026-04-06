@@ -1,10 +1,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Subsystems/EditorSubsystem.h"
+#include "EditorSubsystem.h"
+#include "ASApiQueryHttpServer.h"
 #include "ASApiQuerySubsystem.generated.h"
-
-class FASApiQueryHttpServer;
 
 /** Editor-only HTTP service for AS API queries (independent from SoftUEBridge). */
 UCLASS()
