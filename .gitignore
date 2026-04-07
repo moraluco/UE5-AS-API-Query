@@ -1,0 +1,8 @@
+Binaries/
+Intermediate/
+Saved/
+.vs/
+*.sln
+.as-api-query/
+node_modules/
+
