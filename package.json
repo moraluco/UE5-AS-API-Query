@@ -1,0 +1,11 @@
+{
+  "name": "ue5-as-api-query",
+  "private": true,
+  "description": "ASApiQuery plugin + tools (enable + query).",
+  "type": "module",
+  "scripts": {
+    "as-api:enable-plugin": "node tools/as-api-query/scripts/enable-as-api-query-in-uproject.mjs",
+    "as-api:query": "node tools/as-api-query/cli.mjs"
+  }
+}
+

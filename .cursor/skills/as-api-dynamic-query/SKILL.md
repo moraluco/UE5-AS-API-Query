@@ -20,12 +20,13 @@ description: Dynamic AngelScript API lookup via the ASApiQuery editor HTTP servi
 
 ## 流程（已集成时）
 
-1. **启动 UE 编辑器** 并打开**目标工程**（**ASApiQuery** 已启用；服务地址以 **`.as-api-query/instance.json`** 为准，默认端口见 REQUIREMENT，可由 `AS_API_QUERY_PORT` 覆盖）。
-2. 确认工程根目录存在 **`.as-api-query/instance.json`**（git 忽略该目录属正常）。
-3. 在**工程仓库根**执行：
+1. **默认优先动态查询**：先用 ASApiQuery 查询“当前会话已注册符号”。只有动态查询不可用才回落静态文档（`angelscript-api-query`）。
+2. **启动 UE 编辑器** 并打开目标工程（非 commandlet、非 unattended）；服务地址以工程根 **`.as-api-query/instance.json`** 为准（端口可由 `AS_API_QUERY_PORT` 覆盖）。
+3. 在工程根执行：
    - `npm run as-api:query -- health`
-   - `npm run as-api:query -- query '{"schemaVersion":1,"action":"list_types","filter":""}'`
-4. **失败时**（无实例文件、连接拒绝）：回落技能 **`angelscript-api-query`**（`Doc/API_Docs` → Hazelight 站点）。
+   - `npm run as-api:query -- list_types --filter UAnimInstance`
+   - `npm run as-api:query -- list_symbols --filter LineTrace`
+4. **失败回落**：无实例文件/连接拒绝/AS 未初始化时，回落 **`angelscript-api-query`**（Kit 本地 AS_API → Hazelight 站点）。
 
 ## 契约与细节
 

@@ -35,10 +35,11 @@
 **推荐（幂等、少手改）**：在工程仓库根执行（路径按你的仓库调整）：
 
 ```bash
-npm run as-api:enable-plugin -- path/to/YourProject.uproject
+npm i
+npm run as-api:enable-plugin -- --uproject "path/to/YourProject.uproject"
 ```
 
-详见仓库内 [`tools/as-api-query/scripts/enable-as-api-query-in-uproject.mjs`](../../tools/as-api-query/scripts/enable-as-api-query-in-uproject.mjs)。
+详见仓库内 `tools/as-api-query/scripts/enable-as-api-query-in-uproject.mjs`。
 
 ## 编译
 
@@ -57,12 +58,14 @@ npm run as-api:enable-plugin -- path/to/YourProject.uproject
 
 ## 命令行客户端（与插件配套）
 
-HTTP/JSON 契约与 Node CLI 在仓库的 [`tools/as-api-query/`](../../tools/as-api-query/)，自述见 [`tools/as-api-query/README.md`](../../tools/as-api-query/README.md)。**权威契约**：[REQUIREMENT.md](../../tools/as-api-query/REQUIREMENT.md)。
+HTTP/JSON 契约与 Node CLI 在仓库的 `tools/as-api-query/`，自述见 `tools/as-api-query/README.md`。**权威契约**：`tools/as-api-query/REQUIREMENT.md`。
 
 典型验收（在**工程根**、已启动编辑器并加载工程后）：
 
 ```bash
 npm run as-api:query -- health
+npm run as-api:query -- list_types --filter UAnimInstance
+npm run as-api:query -- list_symbols --filter LineTrace
 ```
 
 ## Cursor Skill（随插件分发）
